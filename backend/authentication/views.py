@@ -9,6 +9,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from notification.models import Notification
 from notification.serializers import NotificationSerializer
+from rest_framework.exceptions import ValidationError
+
 
 User = get_user_model()
 
@@ -38,20 +40,33 @@ def generate_notification_message(user):
             "As an employee, you can request materials and track your requisitions seamlessly."
         )
         
-# Register User
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]  # Allows anyone to register
+
 
     def perform_create(self, serializer):
-        user = serializer.save()
-        
-        # Generate notification message dynamically
-        message = generate_notification_message(user)
+        try:
+            user = serializer.save()
 
-        # Create a notification for role confirmation
-        Notification.objects.create(user=user, message=message)
-    
+            # Send notification to the new user
+            user_message = generate_notification_message(user)
+            Notification.objects.create(recipient=user, message=user_message)
+
+            # Send notification to warehouse admins
+            warehouse_admins = User.objects.filter(role="warehouse_admin")
+            admin_message = f"New user '{user.username}' is requesting role approval for '{user.role}'."
+            
+            for admin in warehouse_admins:
+                Notification.objects.create(recipient=admin, message=admin_message)
+
+        except ValidationError as e:
+            print("Validation Error:", e.detail)  # Logs errors
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+
+
 # Login View (Token-Based)
 class LoginView(views.APIView):
     permission_classes = [AllowAny]
@@ -68,7 +83,8 @@ class LoginView(views.APIView):
                 "is_role_confirmed": user.is_role_confirmed,
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    
 # Logout View
 class LogoutView(views.APIView):
     permission_classes = [IsAuthenticated]

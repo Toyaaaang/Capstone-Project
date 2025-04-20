@@ -19,16 +19,24 @@ class UserSerializer(serializers.ModelSerializer):
 
 # Login Serializer
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    identifier = serializers.CharField()  # Can be username or email
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = authenticate(username=data["username"], password=data["password"])
-        if not user:
-            raise serializers.ValidationError("Invalid credentials")
-        return {"user": user}
+        identifier = data.get("identifier")  
+        password = data.get("password")
 
+        user = User.objects.filter(email=identifier).first() or User.objects.filter(username=identifier).first()
 
+        if user and user.check_password(password):
+            if not user.is_active:
+                raise serializers.ValidationError("This account is inactive.")
+            return {"user": user}
+
+        raise serializers.ValidationError("Invalid credentials.")
+    
+    
+    
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
