@@ -113,7 +113,10 @@ class ApproveRestockingView(APIView):
                 message=f"Your restocking request (ID: {request_id}) has been approved. Please wait for PO creation.",
             )
 
-            return Response({"message": "Restocking request approved successfully."}, status=status.HTTP_200_OK)
+            return Response({
+                "message": "Restocking request approved successfully.",
+                "rv_number": restocking_request.rv_number
+            }, status=status.HTTP_200_OK)
 
         except MaterialRestockRequest.DoesNotExist:
             return Response({"error": "Restocking request not found."}, status=status.HTTP_404_NOT_FOUND)  

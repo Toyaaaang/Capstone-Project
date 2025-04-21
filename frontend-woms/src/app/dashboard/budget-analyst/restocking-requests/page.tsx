@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileScan } from "lucide-react";
+import { File } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import {
   AlertDialog,
@@ -218,7 +218,7 @@ export default function RestockingRequestsPage() {
               }
             }}
           >
-            <FileScan className="mr-2 h-4 w-4" />
+            <File className="mr-2 h-4 w-4" />
             View RV
           </Button>
         </div>
@@ -392,7 +392,6 @@ export default function RestockingRequestsPage() {
             )}
           </div>
           <DialogFooter>
-            <Button onClick={() => setRvDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

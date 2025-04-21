@@ -79,7 +79,7 @@ export default function NotificationDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative">
-          <Bell className="h-6 w-6" />
+          <Bell className="h-10 w-10" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
               {unreadCount}
@@ -87,7 +87,7 @@ export default function NotificationDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-100 p-2">
+      <DropdownMenuContent className="w-100 p-2 mr-6">
         {notifications.length === 0 ? (
           <DropdownMenuItem disabled className="text-gray-500">
             No notifications

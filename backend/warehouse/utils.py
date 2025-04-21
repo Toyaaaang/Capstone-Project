@@ -75,10 +75,17 @@ def generate_rv_pdf(filename, items, requested_by, rv_number, logo_path=None):
     c.drawString(60, height - 415, requested_by)  # Display the requested_by argument
     c.line(60, height - 420, 200, height - 420)  # Draw a line below the requester's name
 
-    c.drawString(270, height - 400, "Evaluated by:")
+    c.drawString(230, height - 400, "Evaluated by:")
+    c.line(230, height - 420, 390, height - 420)  
+
     c.drawString(420, height - 400, "Recommending Approval:")
-    c.drawString(420, height - 430, "Approved by:")
-    c.drawString(420, height - 460, "General Manager")
+    c.line(420, height - 420, 560, height - 420)  
+
+    c.drawString(420, height - 440, "Approved by:")   
+    c.line(420, height - 460, 560, height - 460)  
+    
+    c.drawString(420, height - 480, "General Manager")
+    c.line(420, height - 500, 560, height - 500)  
 
     c.save()
 
