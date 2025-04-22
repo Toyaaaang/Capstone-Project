@@ -10,6 +10,10 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from notification.models import Notification
 from notification.serializers import NotificationSerializer
 from rest_framework.exceptions import ValidationError
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
+import os
 
 
 User = get_user_model()
@@ -126,3 +130,39 @@ class GetUserView(views.APIView):
             "role": user.role,
             "is_role_confirmed": user.is_role_confirmed
         })
+
+# Save User Signature
+class SaveSignatureView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        signature_file = request.FILES.get("signature")
+
+        if not signature_file:
+            return Response({"error": "Signature file is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Save the file to the media directory
+            signature_path = os.path.join("signatures", f"{user.id}_signature.png")
+            full_path = os.path.join(settings.MEDIA_ROOT, signature_path)
+            default_storage.save(full_path, ContentFile(signature_file.read()))
+
+            # Save the file path in the user's signature field
+            user.signature = signature_path
+            user.save()
+
+            return Response({"message": "Signature saved successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Get User Signature
+class GetSignatureView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.signature:
+            signature_url = request.build_absolute_uri(user.signature.url)  # Use .url to get the file URL
+            return Response({"signature": signature_url}, status=status.HTTP_200_OK)
+        return Response({"signature": None}, status=status.HTTP_200_OK)
