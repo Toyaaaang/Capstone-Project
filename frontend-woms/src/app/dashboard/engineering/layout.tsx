@@ -32,6 +32,10 @@ const engineeringMenu = [
     title: "Certifications",
     items: [{ title: "Manage Certifications", url: "/dashboard/engineering/certifications" }],
   },
+  {
+    title: "Document Signatory",
+    items: [{ title: "RV Signatory", url: "/dashboard/engineering/rv-signatories" }],
+  },
 ];
 
 export default function EngineeringLayout({ children }: { children: React.ReactNode }) {
@@ -51,7 +55,7 @@ export default function EngineeringLayout({ children }: { children: React.ReactN
       <AppSidebar menuData={engineeringMenu} />
       <SidebarInset>
         <div className="flex flex-col flex-1">
-          <header className="flex h-16 items-center gap-2 border-b px-4">
+          <header className="flex h-16 items-center gap-2 border-b px-4 justify-between">
             <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />

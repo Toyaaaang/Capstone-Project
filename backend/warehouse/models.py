@@ -32,14 +32,6 @@ class   MaterialRestockRequest(models.Model):
     po_number = models.CharField(max_length=50, null=True, blank=True)
     rv_number = models.CharField(max_length=50, null=True, blank=True)
 
-    draft_po = models.OneToOneField(
-        'po_rv.DraftPurchaseOrder', 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        related_name='restock_request'
-    )
-    
     def __str__(self):
         return f"Request #{self.id} - {self.status}"
 
