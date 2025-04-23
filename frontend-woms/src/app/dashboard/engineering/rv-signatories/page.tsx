@@ -7,19 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { File } from "lucide-react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+import { File, PenLine } from "lucide-react";
 import {
   useReactTable,
   ColumnDef,
@@ -46,8 +34,11 @@ interface RestockingRequest {
   status: string;
   items: {
     item_name: ReactNode;
-    quantity_requested: ReactNode; id: number; name: string; quantity: number 
-}[];
+    quantity_requested: ReactNode;
+    id: number;
+    name: string;
+    quantity: number;
+  }[];
 }
 
 export default function RestockingRequestsPage() {
@@ -59,7 +50,6 @@ export default function RestockingRequestsPage() {
   const [requests, setRequests] = useState<RestockingRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<RestockingRequest | null>(null);
-  const [dialogType, setDialogType] = useState<"approve" | "reject" | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -79,7 +69,7 @@ export default function RestockingRequestsPage() {
   useEffect(() => {
     if (!loading) {
       if (!user) router.push("/login");
-      else if (user.role !== "budget_analyst") router.push("/dashboard");
+      else if (user.role !== "engineering") router.push("/dashboard");
       else fetchRequests();
     }
   }, [user, loading]);
@@ -87,7 +77,7 @@ export default function RestockingRequestsPage() {
   const fetchRequests = async (page: number = 1) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/budget/restocking/pending/?page=${page}`, {
+      const response = await fetch(`${API_BASE_URL}/api/engineering/restocking/requests/?page=${page}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -104,54 +94,19 @@ export default function RestockingRequestsPage() {
     }
   };
 
-  const handleApprove = async () => {
-    if (!selectedRequest) return;
+  const handleSign = async (requestId: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/budget/restocking/approve/${selectedRequest.id}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/engineering/restocking/sign/${requestId}/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
-
-      if (!response.ok) throw new Error("Failed to approve request");
-
-      toast.success("Restocking request approved");
-      setRequests((prev) => prev.filter((req) => req.id !== selectedRequest.id));
+      if (!response.ok) throw new Error("Failed to sign the RV");
+      toast.success("Requisition Voucher signed successfully!");
     } catch (error) {
-      console.error("Error approving request:", error);
-      toast.error("Approval failed");
-    } finally {
-      setDialogType(null);
-      setSelectedRequest(null);
-    }
-  };
-
-  const handleReject = async () => {
-    if (!selectedRequest) return;
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/budget/restocking/reject/${selectedRequest.id}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Failed to reject request");
-
-      toast.error("Restocking request rejected", {
-        description: `Request ID: ${selectedRequest.id} has been rejected.`,
-      });
-
-      setRequests((prev) => prev.filter((req) => req.id !== selectedRequest.id));
-    } catch (error) {
-      console.error("Error rejecting request:", error);
-      toast.error("Rejection failed");
-    } finally {
-      setDialogType(null);
-      setSelectedRequest(null);
+      console.error("Error signing RV:", error);
+      toast.error("Failed to sign the RV.");
     }
   };
 
@@ -192,7 +147,7 @@ export default function RestockingRequestsPage() {
     {
       id: "actions",
       header: ({ column }) => (
-        <div className="text-right mr-12">Actions</div> // Align header text to the right
+        <div className="text-right mr-22">Actions</div> // Align header text to the right
       ),
       cell: ({ row }) => (
         <div className="text-right">
@@ -221,6 +176,14 @@ export default function RestockingRequestsPage() {
             <File className="mr-2 h-4 w-4" />
             View RV
           </Button>
+          <Button
+            className="p-5 bg-blue-500 text-white hover:bg-blue-600"
+            size="sm"
+            onClick={() => handleSign(row.original.id)}
+          >
+            <PenLine className="mr-2 h-4 w-4" />
+            Sign RV
+          </Button>
         </div>
       ),
     },
@@ -246,11 +209,11 @@ export default function RestockingRequestsPage() {
     <div className="p-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold tracking-tight mr-12 ml-5  ">Pending Restocking Requests</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight mr-12 ml-5">Restocking Requests</CardTitle>
         </CardHeader>
         <CardContent>
           {requests.length === 0 ? (
-            <p className="text-muted-foreground">No pending restocking requests.</p>
+            <p className="text-muted-foreground">No restocking requests found.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -300,79 +263,6 @@ export default function RestockingRequestsPage() {
         </CardContent>
       </Card>
 
-      {/* Drawer for Request Details */}
-      <Drawer open={drawerOpen} onOpenChange={(open) => setDrawerOpen(open)}>
-        <DrawerContent className="max-w-xl mx-auto">
-          <DrawerHeader className="text-center">
-            <DrawerTitle>Request Details</DrawerTitle>
-          </DrawerHeader>
-
-          {selectedRequest ? (
-            <div className="p-6 space-y-4">
-              <p>
-                <strong>Requested By:</strong> {selectedRequest.requested_by
-                  .split(" ")
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(" ")}
-              </p>
-              <p>
-                <strong>Requested At:</strong> {formatDate(selectedRequest.created_at)}
-              </p>
-              <p>
-                <strong>Status:</strong> {selectedRequest.status
-                .split(" ")
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ")}
-              </p>
-
-              <div>
-                <strong>Items:</strong>
-                <ul className="list-disc pl-6 space-y-2">
-                  {selectedRequest.items.map((item) => (
-                    <li key={item.id}>
-                      {item.item_name} (Quantity: {item.quantity_requested})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : (
-            <div className="p-6 text-center">No request selected.</div>
-          )}
-
-          <DrawerFooter className="flex justify-between space-x-5">
-            <Button onClick={() => setDialogType("approve")} variant="default" className="w-full">
-              Approve
-            </Button>
-            <Button onClick={() => setDialogType("reject")} variant="destructive" className="w-full">
-              Reject
-            </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-
-      {/* Dialog (used for both approve and reject) */}
-      {selectedRequest && (
-        <AlertDialog open={!!dialogType} onOpenChange={(open) => !open && setDialogType(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {dialogType === "approve" ? "Confirm Approval" : "Confirm Rejection"}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to {dialogType} this restocking request?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={dialogType === "approve" ? handleApprove : handleReject}>
-                {dialogType === "approve" ? "Approve" : "Reject"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-
       {/* Dialog for RV PDF */}
       <Dialog open={isRvDialogOpen} onOpenChange={setRvDialogOpen}>
         <DialogContent className="max-w-6xl h-[90vh] p-4 flex flex-col">
@@ -391,8 +281,7 @@ export default function RestockingRequestsPage() {
               <p className="text-center">No PDF available.</p>
             )}
           </div>
-          <DialogFooter>
-          </DialogFooter>
+          <DialogFooter></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

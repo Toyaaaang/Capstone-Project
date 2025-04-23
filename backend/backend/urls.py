@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/authentication/', include('authentication.urls')),
     path('api/budget/', include('budget.urls')),
     # path('api/employees/', include('employees.urls')),
-    # path('api/engineering/', include('engineering.urls')),
+    path('api/engineering/', include('engineering.urls')),
     # path('api/manager/', include('manager.urls')),
     path('api/notification/', include('notification.urls')),
     # path('api/OpMaintainance/', include('OpMaintainance.urls')),

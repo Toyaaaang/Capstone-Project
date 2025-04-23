@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     RegisterView, LoginView, LogoutView, CustomTokenObtainPairView, 
-    ConfirmRoleView, GetUserView, SaveSignatureView, GetSignatureView
+    ConfirmRoleView, GetUserView, SaveSignatureView, GetSignatureView, AccountView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -16,4 +16,5 @@ urlpatterns = [
     
     path("save-signature/", SaveSignatureView.as_view(), name="save-signature"),
     path("get-signature/", GetSignatureView.as_view(), name="get-signature"),
+    path("account/", AccountView.as_view(), name="account"),
 ]

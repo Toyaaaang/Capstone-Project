@@ -1,15 +1,9 @@
 from rest_framework import serializers
 from warehouse.models import MaterialRestockRequest
 from warehouse.serializers import RestockItemSerializer
-from po_rv.models import PurchaseOrder 
 from po_rv.serializers import DraftPurchaseOrderSerializer
 
-#for PurchaseOrder
-class PurchaseOrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PurchaseOrder
-        fields = ['id', 'po_number', 'created_at']
-        
+ 
 class BudgetRestockingRequestSerializer(serializers.ModelSerializer):
     items = RestockItemSerializer(many=True, read_only=True)  # Ensure items are included
     requested_by = serializers.CharField(source="requested_by.username", read_only=True)

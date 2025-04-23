@@ -14,7 +14,7 @@ from datetime import datetime
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
-from budget.utils import add_signature_to_pdf  # Import the utility function
+from budget.utils import add_signature_to_rvpdf  # Import the utility function
 from django.conf import settings
 import os
 import io
@@ -128,20 +128,13 @@ class ApproveRestockingView(APIView):
                     rv.pdf_file.save(f"RV-{rv.rv_number}.pdf", tmp)
                     rv.save()
 
-            # Prepare the input and output PDF paths
+            # Prepare the input PDF path
             input_pdf_path = rv.pdf_file.path
-            output_pdf_path = os.path.join(settings.MEDIA_ROOT, "requisition_vouchers", f"{rv.rv_number}_signed.pdf")
 
             # Validate input PDF path
             if not os.path.exists(input_pdf_path):
                 print(f"Input PDF path does not exist: {input_pdf_path}")
                 return Response({"error": "Input PDF not found."}, status=status.HTTP_404_NOT_FOUND)
-
-            # Validate output directory
-            output_dir = os.path.dirname(output_pdf_path)
-            if not os.path.exists(output_dir):
-                print(f"Output directory does not exist: {output_dir}")
-                return Response({"error": "Output directory not found."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             # Validate the signature file path
             signature_file_path = request.user.signature.path  # Use .path to get the file path as a string
@@ -151,14 +144,8 @@ class ApproveRestockingView(APIView):
 
             # Call the utility function to add the signature
             try:
-                print(f"Calling add_signature_to_pdf with:")
-                print(f"  Input PDF: {input_pdf_path}")
-                print(f"  Output PDF Path: {output_pdf_path}")
-                print(f"  Signature File Path: {signature_file_path}")
-
-                add_signature_to_pdf(
+                add_signature_to_rvpdf(
                     input_pdf=input_pdf_path,
-                    output_pdf_path=output_pdf_path,
                     signature_path=signature_file_path,  # Pass the file path
                     evaluated_by=request.user.get_full_name()
                 )
@@ -176,7 +163,7 @@ class ApproveRestockingView(APIView):
             return Response({
                 "message": "Restocking request approved successfully.",
                 "rv_number": rv.rv_number,
-                "signed_pdf": output_pdf_path
+                "signed_pdf": input_pdf_path
             }, status=status.HTTP_200_OK)
 
         except MaterialRestockRequest.DoesNotExist:

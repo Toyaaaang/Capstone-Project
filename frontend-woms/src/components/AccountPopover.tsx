@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { useContext } from "react";
 import AuthContext from "@/context/AuthContext";
 import ESignatureRecorder from "@/components/ESignatureRecorder ";
+import EditAccount from "@/components/EditAccount";
 
 export default function AccountPopover() {
-  const { logout } = useContext(AuthContext); 
-  const [isDialogOpen, setDialogOpen] = useState(false); 
-  const [hasSignature, setHasSignature] = useState(true); 
+  const { logout } = useContext(AuthContext);
+  const [isSignatureDialogOpen, setSignatureDialogOpen] = useState(false);
+  const [isEditAccountDialogOpen, setEditAccountDialogOpen] = useState(false);
+  const [hasSignature, setHasSignature] = useState(true);
 
   useEffect(() => {
     const fetchSignatureStatus = async () => {
@@ -69,7 +71,11 @@ export default function AccountPopover() {
         <PopoverContent align="end" className="w-55">
           <ul className="space-y-2">
             <li>
-              <Button variant="ghost" className="w-full justify-start">
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => setEditAccountDialogOpen(true)}
+              >
                 <UserPen className="mr-2 h-4 w-4" />
                 Edit Account
               </Button>
@@ -78,7 +84,7 @@ export default function AccountPopover() {
               <Button
                 variant="ghost"
                 className="w-full justify-start relative"
-                onClick={() => setDialogOpen(true)}
+                onClick={() => setSignatureDialogOpen(true)}
               >
                 <Signature className="mr-2 h-4 w-4" />
                 Add E-Signature
@@ -103,9 +109,15 @@ export default function AccountPopover() {
 
       {/* E-Signature Recorder Dialog */}
       <ESignatureRecorder
-        isOpen={isDialogOpen}
-        onClose={() => setDialogOpen(false)}
+        isOpen={isSignatureDialogOpen}
+        onClose={() => setSignatureDialogOpen(false)}
         onSignatureFetched={handleSignatureFetched} // Pass the memoized callback
+      />
+
+      {/* Edit Account Dialog */}
+      <EditAccount
+        isOpen={isEditAccountDialogOpen}
+        onClose={() => setEditAccountDialogOpen(false)}
       />
     </>
   );

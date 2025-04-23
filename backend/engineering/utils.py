@@ -22,11 +22,11 @@ def add_signature_to_rvpdf(input_pdf, signature_path, evaluated_by):
 
     # Add evaluated by text
     can.setFont("Helvetica", 10)
-    can.drawString(420, 455, f"{evaluated_by}")
+    can.drawString(450, 360, f"{evaluated_by}")
 
     # Add the signature image
     try:
-        can.drawImage(signature_path, 440, 450, width=100, height=50, mask='auto')  # Adjust position and size as needed
+        can.drawImage(signature_path, 440, 380, width=100, height=50, mask='auto')  # Adjust position and size as needed
     except Exception as e:
         print(f"Failed to draw signature image: {e}")
         raise ValueError("Failed to draw signature image.")
