@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from .models import MaterialRestockRequest, RestockItem
-from po_rv.models import DraftPurchaseOrder
-from po_rv.serializers import DraftPurchaseOrderSerializer
 from requisition_voucher.models import RequisitionVoucher
 from .utils import generate_rv_pdf
 from notification.utils import send_notification

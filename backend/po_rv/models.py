@@ -1,27 +1,41 @@
 from django.db import models
-from django.conf import settings
-from warehouse.models import MaterialRestockRequest  # assuming it's still in `budget`
-
-class DraftPurchaseOrder(models.Model):
-    restocking_request = models.OneToOneField(MaterialRestockRequest, on_delete=models.CASCADE, related_name="purchase_order")
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    po_number = models.CharField(max_length=100, unique=True)
-    status = models.CharField(max_length=20, choices=[('draft', 'Draft'), ('finalized', 'Finalized')], default='draft')
-    created_at = models.DateTimeField(auto_now_add=True)
-    fillable_fields = models.JSONField(default=dict, blank=True) 
-
-    def __str__(self):
-        return self.po_number
-
+from django.utils.timezone import now
+from warehouse.models import MaterialRestockRequest
 
 class PurchaseOrder(models.Model):
-    restocking_request = models.ForeignKey(MaterialRestockRequest, on_delete=models.CASCADE)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    po_number = models.CharField(max_length=100, unique=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    comments = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=[('draft', 'Draft'), ('finalized', 'Finalized')], default='draft')
-
+    po_number = models.CharField(max_length=50, unique=True)  # Unique PO number
+    supplier = models.CharField(max_length=255, null= True, blank=True)  # Supplier name
+    shipping_instructions = models.TextField(blank=True, null=True)  # Optional shipping instructions
+    rv_number = models.CharField(max_length=50, unique=True, default="Default RV Number")  # Associated RV number
+    restocking_request = models.OneToOneField(
+        MaterialRestockRequest, 
+        on_delete=models.CASCADE, 
+        related_name="purchase_order"
+    )  # Link to the restocking request
+    address = models.TextField(default="Supplier Address")
+    grand_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, default=0)  # Total amount for the PO
+    pdf_file = models.FileField(upload_to="purchase_orders/", blank=True, null=True)  # Generated PO PDF
+    created_at = models.DateTimeField(default=now) 
+    updated_at = models.DateTimeField(auto_now=True) 
+    
     def __str__(self):
-        return self.po_number
+        return f"PO {self.po_number} - {self.supplier}"
+
+    def generate_po_number(self):
+        """
+        Generate a unique PO number based on the last created PO.
+        """
+        last_po = PurchaseOrder.objects.all().order_by("created_at").last()
+        if last_po:
+            last_number = int(last_po.po_number.split("-")[1])
+            return f"PO-{last_number + 1:05d}"  # Increment and pad with zeros
+        else:
+            return "PO-00001"  # Default starting PO number
+
+    def save(self, *args, **kwargs):
+        """
+        Automatically generate a PO number if it doesn't exist.
+        """
+        if not self.po_number:
+            self.po_number = self.generate_po_number()
+        super().save(*args, **kwargs)

@@ -1,11 +1,8 @@
 from django.urls import path
-from .views import CreateDraftPOView, FinalizePOView, SaveDraftPOView
-from . import views
+from .views import CreatePurchaseOrderView, PurchaseOrderPreviewView, PurchaseOrderPDFView
 
 urlpatterns = [
-    path('draft-po/create/<int:pk>/', CreateDraftPOView.as_view(), name='create-draft-po'),
-    path("preview/<int:pk>/", views.POPreviewView.as_view(), name="po-preview"),
-    path('po/finalize/<int:pk>/', FinalizePOView.as_view(), name='finalize-po'),
-    path('po/save-draft/<int:pk>/', SaveDraftPOView.as_view(), name='save-draft-po'),
-
+    path('create/', CreatePurchaseOrderView.as_view(), name='create-purchase-order'),
+    path('preview/', PurchaseOrderPreviewView.as_view(), name='preview-purchase-order'),
+    path('<int:request_id>/pdf/', PurchaseOrderPDFView.as_view(), name='purchase-order-pdf'),
 ]

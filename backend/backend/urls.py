@@ -30,7 +30,7 @@ urlpatterns = [
     # path('api/OpMaintainance/', include('OpMaintainance.urls')),
     path('api/warehouse-admin/', include('warehouse_admin.urls')),
     path('api/warehouse/', include('warehouse.urls')),
-    path('api/po_rv/', include('po_rv.urls')),
+    # path('api/po_rv/', include('po_rv.urls')),
     path('api/requisition-voucher/', include('requisition_voucher.urls')),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

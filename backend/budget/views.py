@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from warehouse.models import MaterialRestockRequest
 from requisition_voucher.models import RequisitionVoucher
-from .serializers import BudgetRestockingRequestSerializer
+from .serializers import BudgetRestockingRequestSerializer, RestockingRequestWithRVSerializer
 from authentication.permissions import IsBudgetAnalyst 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -81,18 +81,15 @@ class ProcessedRestockingRequestsView(generics.ListAPIView):
         return queryset.order_by('-created_at')
 
 
-class ApprovedRestockingRequestListView(generics.ListAPIView):
-    """
-    Returns a list of approved restocking requests only.
-    Used for PO draft creation.
-    """
+class ApprovedRestockingRequestsView(generics.ListAPIView):
+    """Fetch all pending restocking requests."""
+    
+    queryset = MaterialRestockRequest.objects.filter(status="approved").order_by('-approved_at').prefetch_related('items')
     serializer_class = BudgetRestockingRequestSerializer
     permission_classes = [permissions.IsAuthenticated, IsBudgetAnalyst]
-    pagination_class = RestockingRequestPagination 
-    def get_queryset(self):
-        return MaterialRestockRequest.objects.filter(status="approved").order_by("-approved_at")
-
-
+    pagination_class = RestockingRequestPagination
+    
+ 
 class ApproveRestockingView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsBudgetAnalyst]
 

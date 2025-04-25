@@ -35,6 +35,13 @@ const managerMenu = [
       { title: "Approval History", url: "/dashboard/manager/approval-history" },
     ],
   },
+  {
+    title: "Document Signatories",
+    items: [
+      { title: "RV Signatories", url: "/dashboard/manager/rv-signatories" },
+      { title: "Approval History", url: "/dashboard/manager/approval-history" },
+    ],
+  },
 ];
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {

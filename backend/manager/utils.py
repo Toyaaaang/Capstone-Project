@@ -1,5 +1,5 @@
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import LETTER
+from reportlab.lib.pagesizes import letter
 from PyPDF2 import PdfReader, PdfWriter
 import io
 import os
@@ -18,15 +18,15 @@ def add_signature_to_rvpdf(input_pdf, signature_path, evaluated_by):
 
     # Step 2: Create an overlay PDF with the signature and evaluated details
     packet = io.BytesIO()
-    can = canvas.Canvas(packet, pagesize=LETTER)
+    can = canvas.Canvas(packet, pagesize=letter)
 
     # Add evaluated by text
     can.setFont("Helvetica", 10)
-    can.drawString(420, 445, f"{evaluated_by}")
+    can.drawString(60, 460, f"{evaluated_by}")
 
     # Add the signature image
     try:
-        can.drawImage(signature_path, 440, 465, width=100, height=50, mask='auto')  # Adjust position and size as needed
+        can.drawImage(signature_path, 60, 480, width=100, height=50, mask='auto')  # Adjust position and size as needed
     except Exception as e:
         print(f"Failed to draw signature image: {e}")
         raise ValueError("Failed to draw signature image.")
@@ -54,5 +54,3 @@ def add_signature_to_rvpdf(input_pdf, signature_path, evaluated_by):
     os.replace(temp_pdf_path, input_pdf)
 
     print(f"Modified PDF saved to {input_pdf}")
-
-
